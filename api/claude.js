@@ -1,17 +1,28 @@
 export default async function handler(req, res) {
+  // Allow your GitHub Pages domain + localhost for testing
+  const allowedOrigins = [
+    'https://dhruvmts-wq.github.io',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500'
+  ];
+
+  const origin = req.headers.origin || '';
+  const allowedOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
+  // CORS headers on EVERY response including OPTIONS
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  // Handle preflight — must return 200 immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // CORS headers — restrict to your GitHub Pages domain
-  res.setHeader('Access-Control-Allow-Origin', 'https://dhruvmts-wq.github.io');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
